@@ -35,29 +35,33 @@ tab1, tab2, tab3, tab4 = st.tabs(["📅 Daily Outgoing", "📊 Filter & Summary"
 # --- Daily Outgoing Entry ---
 with tab1:
     st.header("📅 Daily Outgoing Entry")
-    with st.form("daily_entry", clear_on_submit=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            date = st.date_input("Date", value=datetime.date.today())
-            product = st.selectbox("Product", options=st.session_state.products["Product"])
-            default_unit = st.session_state.products.loc[st.session_state.products["Product"] == product, "Default Unit"].values[0]
-            unit = st.text_input("Unit", value=default_unit)
-            quantity = st.number_input("Quantity", min_value=0.0)
-        with col2:
-            branch = st.text_input("Branch")
-            unit_price = st.number_input("Unit Price", min_value=0.0)
-            total_price = quantity * unit_price
-            note = st.text_input("Note")
+    if st.session_state.products.empty:
+        st.warning("⚠️ Please register at least one product before adding outgoing entries.")
+    else:
+        with st.form("daily_entry", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                date = st.date_input("Date", value=datetime.date.today())
+                product = st.selectbox("Product", options=st.session_state.products["Product"])
+                matching_unit = st.session_state.products.loc[st.session_state.products["Product"] == product, "Default Unit"]
+                default_unit = matching_unit.values[0] if not matching_unit.empty else ""
+                unit = st.text_input("Unit", value=default_unit)
+                quantity = st.number_input("Quantity", min_value=0.0)
+            with col2:
+                branch = st.text_input("Branch")
+                unit_price = st.number_input("Unit Price", min_value=0.0)
+                total_price = quantity * unit_price
+                note = st.text_input("Note")
 
-        submitted = st.form_submit_button("Save Entry")
-        if submitted:
-            row = {
-                "Date": date, "Product": product, "Branch": branch,
-                "Unit": unit, "Quantity": quantity,
-                "Unit Price": unit_price, "Total Price": total_price, "Note": note
-            }
-            st.session_state.outgoing = st.session_state.outgoing._append(row, ignore_index=True)
-            st.success("✅ Entry saved!")
+            submitted = st.form_submit_button("Save Entry")
+            if submitted:
+                row = {
+                    "Date": date, "Product": product, "Branch": branch,
+                    "Unit": unit, "Quantity": quantity,
+                    "Unit Price": unit_price, "Total Price": total_price, "Note": note
+                }
+                st.session_state.outgoing = st.session_state.outgoing._append(row, ignore_index=True)
+                st.success("✅ Entry saved!")
 
 # --- Filter & Summary ---
 with tab2:
