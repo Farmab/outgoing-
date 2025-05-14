@@ -67,7 +67,7 @@ with tab1:
             col1, col2 = st.columns(2)
             with col1:
                 date = st.date_input("Date", value=datetime.date.today())
-                product = st.text_input("Product", placeholder="Type product name", value="", autocomplete="on")
+                product = st.selectbox("Product", options=st.session_state.products["Product"].unique())
                 default_unit = ""
                 if product:
                     try:
