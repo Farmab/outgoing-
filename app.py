@@ -124,8 +124,8 @@ with tab3:
                 st.session_state.outgoing.reset_index(drop=True, inplace=True)
                 try:
                     st.rerun()
-                except:
-                    st.experimental_rerun()
+                except AttributeError:
+                    pass  # Safe fallback for older versions
 
 # --- Export ---
 with tab4:
