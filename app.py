@@ -77,7 +77,7 @@ with tab1:
                         # removed duplicate unsafe assignment
                     except Exception:
                         default_unit = ""
-                default_unit = matching_unit.values[0] if not matching_unit.empty else ""
+                # handled within try block above
                 unit = st.text_input("Unit", value=default_unit)
                 quantity = st.number_input("Quantity", min_value=0.0)
             with col2:
