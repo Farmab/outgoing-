@@ -123,9 +123,9 @@ with tab3:
                 st.session_state.outgoing.drop(index=i, inplace=True)
                 st.session_state.outgoing.reset_index(drop=True, inplace=True)
                 try:
-                st.rerun()
-            except:
-                st.experimental_rerun()
+                    st.rerun()
+                except:
+                    st.experimental_rerun()
 
 # --- Export ---
 with tab4:
