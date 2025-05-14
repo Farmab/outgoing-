@@ -120,9 +120,10 @@ with tab2:
 
     if not df.empty:
         st.write("### 📦 Summary by Branch and Product")
+        st.button("🖨 Print Summary", on_click=lambda: st.markdown("<script>window.print();</script>", unsafe_allow_html=True))
         summary = df.groupby(["Branch", "Product", "Type", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         grand_total = summary["Total Price"].sum()
-        st.dataframe(summary, use_container_width=True)
+        st.table(summary)
         total_sum = df["Total Price"].sum()
         st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
         st.info(f"🧾 Grand Total Across All Items: {grand_total:,.2f}")
@@ -132,6 +133,8 @@ with tab2:
 # --- View All Data with Edit/Delete ---
 with tab3:
     st.header("📋 All Outgoing Records")
+    st.markdown("<script>window.print = () => { window.open(document.location.href, '_blank').print(); };</script>", unsafe_allow_html=True)
+    st.button("🖨 Print Page", on_click=lambda: st.markdown("<script>window.print();</script>", unsafe_allow_html=True))
     df = st.session_state.outgoing
     if "Type" not in df.columns:
         try:
