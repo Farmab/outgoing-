@@ -229,13 +229,12 @@ with tab3:
                 st.session_state.edit_index = i
         with cols[8]:
             if st.button("🗑 Delete", key=f"delete_{i}"):
-            st.session_state.outgoing.drop(index=i, inplace=True)
-            st.session_state.outgoing.reset_index(drop=True, inplace=True)
-            save_data(st.session_state.outgoing)
-            try:
-                st.rerun()
-            except AttributeError:
-                pass  # Safe fallback for older versions
+                st.session_state.outgoing.drop(index=i, inplace=True)
+                st.session_state.outgoing.reset_index(drop=True, inplace=True)
+                save_data(st.session_state.outgoing)
+                try:
+                    st.rerun()
+                except AttributeError:  # Safe fallback for older versions
 
     # Edit form below the table
     if "edit_index" in st.session_state and st.session_state.edit_index is not None:
