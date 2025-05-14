@@ -211,7 +211,10 @@ with tab3:
         pdf.cell(200, 10, txt=f"Total Price: {final_total}", ln=True)
         pdf_output = BytesIO()
         pdf.output(pdf_output)
-        st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime=
+        pdf_output.seek(0)
+        st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime="application/pdf")
+
+# --- Export ---
 with tab4:
     st.header("📥 Export All Data")
 
