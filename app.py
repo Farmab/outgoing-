@@ -143,6 +143,9 @@ with tab3:
             df["Type"] = st.session_state.products.set_index("Product").loc[df["Product"]]["Type"].values
         except:
             df["Type"] = ""
+    if not df.empty:
+        st.table(df.drop(columns=["Note"]))
+
     for i, row in df.iterrows():
         cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2, 1])
         with cols[0]: st.write(row["Date"])
