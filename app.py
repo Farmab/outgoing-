@@ -234,7 +234,8 @@ with tab3:
                 save_data(st.session_state.outgoing)
                 try:
                     st.rerun()
-                except AttributeError:  # Safe fallback for older versions
+                except AttributeError:
+    pass  # Safe fallback for older versions
 
     # Edit form below the table
     if "edit_index" in st.session_state and st.session_state.edit_index is not None:
