@@ -71,8 +71,10 @@ with tab1:
                 product_match = st.session_state.products[st.session_state.products["Product"] == product]
                 type_options = product_match["Type"].dropna().unique()
                 unit_options = product_match["Default Unit"].dropna().unique()
-                product_type = st.selectbox("Type of Product", options=type_options) if len(type_options) > 1 else st.text_input("Type of Product", value=type_options[0] if len(type_options) == 1 else "", disabled=True)
-                unit = st.selectbox("Unit", options=unit_options) if len(unit_options) > 1 else st.text_input("Unit", value=unit_options[0] if len(unit_options) == 1 else "")
+                product_type = st.text_input("Type of Product")  # Manually entered now
+                all_units = st.session_state.products["Default Unit"].dropna().unique()
+                unit_options = st.session_state.products["Default Unit"].dropna().unique()
+                unit = st.selectbox("Unit", options=unit_options)
                 # handled within try block above
                 # unit handled above dynamically
                 quantity = st.number_input("Quantity", min_value=0.0)
