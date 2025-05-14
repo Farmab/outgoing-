@@ -100,6 +100,7 @@ with tab1:
 with tab2:
     st.header("📊 Filter & Summary")
     df = st.session_state.outgoing.copy()
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 
     with st.expander("🔍 Filters"):
         col1, col2, col3 = st.columns(3)
@@ -120,9 +121,11 @@ with tab2:
     if not df.empty:
         st.write("### 📦 Summary by Branch and Product")
         summary = df.groupby(["Branch", "Product", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
+        grand_total = summary["Total Price"].sum()
         st.dataframe(summary, use_container_width=True)
         total_sum = df["Total Price"].sum()
         st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
+        st.info(f"🧾 Grand Total Across All Items: {grand_total:,.2f}")
     else:
         st.info("No data matches your filters.")
 
@@ -133,7 +136,7 @@ with tab3:
     for i, row in df.iterrows():
         cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2, 1])
         with cols[0]: st.write(row["Date"])
-        with cols[1]: st.write(row["Product"])
+        with cols[1]: st.write(f"{row['Product']} ({row.get('Type', '')})")
         with cols[2]: st.write(row["Branch"])
         with cols[3]: st.write(f"{row['Quantity']} {row['Unit']}")
         with cols[4]: st.write(f"{row['Unit Price']} {row['Currency']}")
