@@ -54,7 +54,7 @@ with tab1:
             col1, col2 = st.columns(2)
             with col1:
                 date = st.date_input("Date", value=datetime.date.today())
-                product = st.text_input("Product", placeholder="Type product name")
+                product = st.text_input("Product", placeholder="Type product name", value="", autocomplete="on")
                 matching_unit = st.session_state.products[st.session_state.products["Product"].str.startswith(product)]["Default Unit"]
                 default_unit = matching_unit.values[0] if not matching_unit.empty else ""
                 unit = st.text_input("Unit", value=default_unit)
@@ -102,6 +102,8 @@ with tab2:
         st.write("### 📦 Summary by Branch and Product")
         summary = df.groupby(["Branch", "Product", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         st.dataframe(summary, use_container_width=True)
+        total_sum = df["Total Price"].sum()
+        st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
     else:
         st.info("No data matches your filters.")
 
@@ -110,7 +112,7 @@ with tab3:
     st.header("📋 All Outgoing Records")
     df = st.session_state.outgoing
     for i, row in df.iterrows():
-        cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2])
+        cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2, 1])
         with cols[0]: st.write(row["Date"])
         with cols[1]: st.write(row["Product"])
         with cols[2]: st.write(row["Branch"])
@@ -119,6 +121,9 @@ with tab3:
         with cols[5]: st.write(f"{row['Total Price']} {row['Currency']}")
         with cols[6]: st.write(row["Note"])
         with cols[7]:
+            if st.button("✏️ Edit", key=f"edit_{i}"):
+                st.session_state.edit_index = i
+        with cols[8]:
             if st.button("🗑 Delete", key=f"delete_{i}"):
                 st.session_state.outgoing.drop(index=i, inplace=True)
                 st.session_state.outgoing.reset_index(drop=True, inplace=True)
@@ -126,6 +131,37 @@ with tab3:
                     st.rerun()
                 except AttributeError:
                     pass  # Safe fallback for older versions
+
+    # Edit form below the table
+    if "edit_index" in st.session_state and st.session_state.edit_index is not None:
+        idx = st.session_state.edit_index
+        row = st.session_state.outgoing.loc[idx]
+        st.markdown("### ✏️ Edit Entry")
+        with st.form("edit_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                date = st.date_input("Date", value=row["Date"])
+                product = st.text_input("Product", value=row["Product"])
+                unit = st.text_input("Unit", value=row["Unit"])
+                quantity = st.number_input("Quantity", value=row["Quantity"], min_value=0.0)
+            with col2:
+                branch = st.selectbox("Branch", options=st.session_state.branches, index=st.session_state.branches.index(row["Branch"]))
+                currency = st.radio("Currency", options=["IQD", "$"], index=["IQD", "$"].index(row["Currency"]))
+                unit_price = st.number_input("Unit Price", value=row["Unit Price"], min_value=0.0)
+                note = st.text_input("Note", value=row["Note"])
+
+            total_price = quantity * unit_price
+            if st.form_submit_button("Update Entry"):
+                st.session_state.outgoing.loc[idx] = [
+                    date, product, branch, unit, quantity,
+                    unit_price, total_price, currency, note
+                ]
+                st.session_state.edit_index = None
+                st.success("✅ Entry updated!")
+                try:
+                    st.rerun()
+                except AttributeError:
+                    pass
 
 # --- Export ---
 with tab4:
