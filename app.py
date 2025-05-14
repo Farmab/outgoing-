@@ -7,7 +7,7 @@ st.set_page_config(page_title="Ice Cream Outgoing Tracker", layout="wide")
 
 # --- Initialize session state ---
 if "products" not in st.session_state:
-    st.session_state.products = pd.DataFrame(columns=["Product", "Default Unit"])
+    st.session_state.products = pd.DataFrame(columns=["Product", "Type", "Default Unit"])
 
 if "branches" not in st.session_state:
     st.session_state.branches = ["ڕێی مەسیف", "ڕێی بەحرکە", "ڕێی بنەسڵاوە"]
@@ -19,6 +19,18 @@ if "outgoing" not in st.session_state:
     ])
 
 # --- Product Registration ---
+
+# --- Import from Excel ---
+st.sidebar.header("📥 Import Products from Excel")
+uploaded_file = st.sidebar.file_uploader("Upload Excel file with Product, Type, and Unit", type=["xlsx"])
+if uploaded_file:
+    df_upload = pd.read_excel(uploaded_file)
+    if {"product", "default type", "unit"}.issubset(df_upload.columns):
+        df_upload.columns = ["Product", "Type", "Default Unit"]
+        st.session_state.products = pd.concat([st.session_state.products, df_upload], ignore_index=True).drop_duplicates()
+        st.success("✅ Products imported successfully!")
+    else:
+        st.error("❌ Excel must have columns: product, default type, unit")
 st.sidebar.header("📦 Register Products")
 with st.sidebar.form("add_product"):
     new_product = st.text_input("Product Name (in Kurdish)")
@@ -28,7 +40,8 @@ with st.sidebar.form("add_product"):
     unit = custom_unit if custom_unit else selected_unit
     add_btn = st.form_submit_button("➕ Add Product")
     if add_btn and new_product:
-        new_entry = {"Product": new_product, "Default Unit": unit}
+        new_type = st.text_input("Type of Product")
+    new_entry = {"Product": new_product, "Type": new_type, "Default Unit": unit}
         st.session_state.products = st.session_state.products._append(new_entry, ignore_index=True)
         st.success(f"✅ '{new_product}' added with unit '{unit}'")
 
