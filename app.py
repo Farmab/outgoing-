@@ -9,10 +9,13 @@ st.set_page_config(page_title="Ice Cream Outgoing Tracker", layout="wide")
 if "products" not in st.session_state:
     st.session_state.products = pd.DataFrame(columns=["Product", "Default Unit"])
 
+if "branches" not in st.session_state:
+    st.session_state.branches = ["ڕێی مەسیف", "ڕێی بەحرکە", "ڕێی بنەسڵاوە"]
+
 if "outgoing" not in st.session_state:
     st.session_state.outgoing = pd.DataFrame(columns=[
         "Date", "Product", "Branch", "Unit", "Quantity",
-        "Unit Price", "Total Price", "Note"
+        "Unit Price", "Total Price", "Currency", "Note"
     ])
 
 # --- Product Registration ---
@@ -28,6 +31,15 @@ with st.sidebar.form("add_product"):
         new_entry = {"Product": new_product, "Default Unit": unit}
         st.session_state.products = st.session_state.products._append(new_entry, ignore_index=True)
         st.success(f"✅ '{new_product}' added with unit '{unit}'")
+
+# --- Branch Registration ---
+st.sidebar.header("🏪 Register Branches")
+with st.sidebar.form("add_branch"):
+    new_branch = st.text_input("New Branch Name")
+    add_branch_btn = st.form_submit_button("➕ Add Branch")
+    if add_branch_btn and new_branch and new_branch not in st.session_state.branches:
+        st.session_state.branches.append(new_branch)
+        st.success(f"✅ Branch '{new_branch}' added")
 
 # --- Tabs ---
 tab1, tab2, tab3, tab4 = st.tabs(["📅 Daily Outgoing", "📊 Filter & Summary", "📋 All Data", "📥 Export"])
@@ -48,7 +60,8 @@ with tab1:
                 unit = st.text_input("Unit", value=default_unit)
                 quantity = st.number_input("Quantity", min_value=0.0)
             with col2:
-                branch = st.text_input("Branch")
+                branch = st.selectbox("Branch", options=st.session_state.branches)
+                currency = st.radio("Currency", options=["IQD", "$"])
                 unit_price = st.number_input("Unit Price", min_value=0.0)
                 total_price = quantity * unit_price
                 note = st.text_input("Note")
@@ -58,7 +71,8 @@ with tab1:
                 row = {
                     "Date": date, "Product": product, "Branch": branch,
                     "Unit": unit, "Quantity": quantity,
-                    "Unit Price": unit_price, "Total Price": total_price, "Note": note
+                    "Unit Price": unit_price, "Total Price": total_price,
+                    "Currency": currency, "Note": note
                 }
                 st.session_state.outgoing = st.session_state.outgoing._append(row, ignore_index=True)
                 st.success("✅ Entry saved!")
@@ -86,15 +100,29 @@ with tab2:
 
     if not df.empty:
         st.write("### 📦 Summary by Branch and Product")
-        summary = df.groupby(["Branch", "Product", "Unit"])[["Quantity", "Total Price"]].sum().reset_index()
+        summary = df.groupby(["Branch", "Product", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         st.dataframe(summary, use_container_width=True)
     else:
         st.info("No data matches your filters.")
 
-# --- View All Data ---
+# --- View All Data with Edit/Delete ---
 with tab3:
     st.header("📋 All Outgoing Records")
-    st.dataframe(st.session_state.outgoing, use_container_width=True)
+    df = st.session_state.outgoing
+    for i, row in df.iterrows():
+        cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2])
+        with cols[0]: st.write(row["Date"])
+        with cols[1]: st.write(row["Product"])
+        with cols[2]: st.write(row["Branch"])
+        with cols[3]: st.write(f"{row['Quantity']} {row['Unit']}")
+        with cols[4]: st.write(f"{row['Unit Price']} {row['Currency']}")
+        with cols[5]: st.write(f"{row['Total Price']} {row['Currency']}")
+        with cols[6]: st.write(row["Note"])
+        with cols[7]:
+            if st.button("🗑 Delete", key=f"delete_{i}"):
+                st.session_state.outgoing.drop(index=i, inplace=True)
+                st.session_state.outgoing.reset_index(drop=True, inplace=True)
+                st.experimental_rerun()
 
 # --- Export ---
 with tab4:
