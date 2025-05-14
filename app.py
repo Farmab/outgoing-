@@ -38,10 +38,10 @@ with st.sidebar.form("add_product"):
     selected_unit = st.selectbox("Choose Unit", options=standard_units)
     custom_unit = st.text_input("Or enter a custom unit")
     unit = custom_unit if custom_unit else selected_unit
+    new_type = st.text_input("Type of Product")
     add_btn = st.form_submit_button("➕ Add Product")
     if add_btn and new_product:
-        new_type = st.text_input("Type of Product")
-    new_entry = {"Product": new_product, "Type": new_type, "Default Unit": unit}
+        new_entry = {"Product": new_product, "Type": new_type, "Default Unit": unit}
         st.session_state.products = st.session_state.products._append(new_entry, ignore_index=True)
         st.success(f"✅ '{new_product}' added with unit '{unit}'")
 
