@@ -13,7 +13,7 @@ if "branches" not in st.session_state:
     st.session_state.branches = ["ڕێی مەسیف", "ڕێی بەحرکە", "ڕێی بنەسڵاوە"]
 
 if "outgoing" not in st.session_state:
-    st.session_state.outgoing = pd.DataFrame(columns=[
+    st.session_state.outgoing = pd.DataFrame(columns=["Type", 
         "Date", "Product", "Branch", "Unit", "Quantity",
         "Unit Price", "Total Price", "Currency", "Note"
     ])
@@ -88,7 +88,7 @@ with tab1:
             submitted = st.form_submit_button("Save Entry")
             if submitted:
                 row = {
-                    "Date": date, "Product": product, "Branch": branch,
+                "Date": date, "Product": product, "Type": product_type, "Branch": branch,
                     "Unit": unit, "Quantity": quantity,
                     "Unit Price": unit_price, "Total Price": total_price,
                     "Currency": currency, "Note": note
@@ -179,8 +179,9 @@ with tab3:
 
             total_price = quantity * unit_price
             if st.form_submit_button("Update Entry"):
+                type_ = st.text_input("Type", value=row.get("Type", ""))
                 st.session_state.outgoing.loc[idx] = [
-                    date, product, branch, unit, quantity,
+                    date, product, type_, branch, unit, quantity,
                     unit_price, total_price, currency, note
                 ]
                 st.session_state.edit_index = None
