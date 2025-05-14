@@ -122,6 +122,9 @@ with tab3:
             if st.button("🗑 Delete", key=f"delete_{i}"):
                 st.session_state.outgoing.drop(index=i, inplace=True)
                 st.session_state.outgoing.reset_index(drop=True, inplace=True)
+                try:
+                st.rerun()
+            except:
                 st.experimental_rerun()
 
 # --- Export ---
