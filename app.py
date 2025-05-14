@@ -68,7 +68,15 @@ with tab1:
             with col1:
                 date = st.date_input("Date", value=datetime.date.today())
                 product = st.text_input("Product", placeholder="Type product name", value="", autocomplete="on")
-                matching_unit = st.session_state.products[st.session_state.products["Product"].str.startswith(product)]["Default Unit"]
+                default_unit = ""
+                if product:
+                    try:
+                        matching_unit = st.session_state.products[
+                            st.session_state.products["Product"].str.startswith(product, na=False)
+                        ]["Default Unit"]
+                        # removed duplicate unsafe assignment
+                    except Exception:
+                        default_unit = ""
                 default_unit = matching_unit.values[0] if not matching_unit.empty else ""
                 unit = st.text_input("Unit", value=default_unit)
                 quantity = st.number_input("Quantity", min_value=0.0)
@@ -175,6 +183,22 @@ with tab3:
                     st.rerun()
                 except AttributeError:
                     pass
+
+# --- PDF Export ---
+    from fpdf import FPDF
+    if st.button("🖨 Export Summary as PDF"):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Ice Cream Outgoing Summary", ln=True, align='C')
+        pdf.ln(10)
+        for i, row in summary.iterrows():
+            line = f"{row['Branch']} - {row['Product']} ({row['Unit']}): {row['Quantity']} qty, {row['Total Price']} {row['Currency']}"
+            pdf.cell(200, 10, txt=line, ln=True)
+        pdf.cell(200, 10, txt=f"Total Price: {total_sum:,.2f}", ln=True)
+        pdf_output = BytesIO()
+        pdf.output(pdf_output)
+        st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime="application/pdf")
 
 # --- Export ---
 with tab4:
