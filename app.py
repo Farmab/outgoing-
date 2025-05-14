@@ -122,7 +122,7 @@ with tab2:
         st.write("### 📦 Summary by Branch and Product")
         summary = df.groupby(["Branch", "Product", "Type", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         grand_total = summary["Total Price"].sum()
-        st.dataframe(summary.style.set_caption("📦 Summary with Product Type"), use_container_width=True)
+        st.dataframe(summary, use_container_width=True)
         total_sum = df["Total Price"].sum()
         st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
         st.info(f"🧾 Grand Total Across All Items: {grand_total:,.2f}")
@@ -194,15 +194,20 @@ with tab3:
 # --- PDF Export ---
     from fpdf import FPDF
     if st.button("🖨 Export Summary as PDF"):
-        pdf = FPDF()
+        from fpdf import FPDF
+from pathlib import Path
+pdf = FPDF()
+pdf.add_page()
+pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
+pdf.set_font('DejaVu', '', 12)
         pdf.add_page()
         pdf.set_font("Arial", size=12)
         pdf.cell(200, 10, txt="Ice Cream Outgoing Summary", ln=True, align='C')
         pdf.ln(10)
         for i, row in summary.iterrows():
-            line = f"{row['Branch']} - {row['Product']} ({row['Unit']}): {row['Quantity']} qty, {row['Total Price']} {row['Currency']}"
+            line = f"{row['Branch']} - {row['Product']} ({row['Unit']}): {int(row['Quantity']) if row['Quantity'] == int(row['Quantity']) else row['Quantity']} qty, {int(row['Total Price']) if row['Total Price'] == int(row['Total Price']) else row['Total Price']} {row['Currency']}"
             pdf.cell(200, 10, txt=line, ln=True)
-        pdf.cell(200, 10, txt=f"Total Price: {total_sum:,.2f}", ln=True)
+        pdf.cell(200, 10, txt=f"Total Price: {int(total_sum) if total_sum == int(total_sum) else total_sum}", ln=True)
         pdf_output = BytesIO()
         pdf.output(pdf_output)
         st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime="application/pdf")
