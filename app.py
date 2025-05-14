@@ -120,9 +120,9 @@ with tab2:
 
     if not df.empty:
         st.write("### 📦 Summary by Branch and Product")
-        summary = df.groupby(["Branch", "Product", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
+        summary = df.groupby(["Branch", "Product", "Type", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         grand_total = summary["Total Price"].sum()
-        st.dataframe(summary, use_container_width=True)
+        st.dataframe(summary.style.set_caption("📦 Summary with Product Type"), use_container_width=True)
         total_sum = df["Total Price"].sum()
         st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
         st.info(f"🧾 Grand Total Across All Items: {grand_total:,.2f}")
@@ -133,10 +133,15 @@ with tab2:
 with tab3:
     st.header("📋 All Outgoing Records")
     df = st.session_state.outgoing
+    if "Type" not in df.columns:
+        try:
+            df["Type"] = st.session_state.products.set_index("Product").loc[df["Product"]]["Type"].values
+        except:
+            df["Type"] = ""
     for i, row in df.iterrows():
         cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2, 1])
         with cols[0]: st.write(row["Date"])
-        with cols[1]: st.write(f"{row['Product']} ({row.get('Type', '')})")
+        with cols[1]: st.write(f"{row['Product']} ({row['Type']})")
         with cols[2]: st.write(row["Branch"])
         with cols[3]: st.write(f"{row['Quantity']} {row['Unit']}")
         with cols[4]: st.write(f"{row['Unit Price']} {row['Currency']}")
