@@ -6,6 +6,18 @@ from io import BytesIO
 st.set_page_config(page_title="Ice Cream Outgoing Tracker", layout="wide")
 
 # --- Initialize session state ---
+data_key = "outgoing_data.csv"
+
+@st.cache_data(show_spinner=False)
+def load_saved_data():
+    try:
+        return pd.read_csv(data_key, parse_dates=["Date"])
+    except:
+        return pd.DataFrame(columns=["Type", "Date", "Product", "Branch", "Unit", "Quantity", "Unit Price", "Total Price", "Currency", "Note"])
+
+@st.cache_data(show_spinner=False, persist=True)
+def save_data(df):
+    df.to_csv(data_key, index=False)
 if "products" not in st.session_state:
     st.session_state.products = pd.DataFrame(columns=["Product", "Type", "Default Unit"])
 
@@ -13,6 +25,11 @@ if "branches" not in st.session_state:
     st.session_state.branches = ["ڕێی مەسیف", "ڕێی بەحرکە", "ڕێی بنەسڵاوە"]
 
 if "outgoing" not in st.session_state:
+    st.session_state.outgoing = load_saved_data()
+else:
+    save_data(st.session_state.outgoing)
+
+
     st.session_state.outgoing = pd.DataFrame(columns=["Type", 
         "Date", "Product", "Branch", "Unit", "Quantity",
         "Unit Price", "Total Price", "Currency", "Note"
@@ -144,7 +161,27 @@ with tab3:
         except:
             df["Type"] = ""
     if not df.empty:
-        st.table(df.drop(columns=["Note"]))
+        styled_df = df.copy()
+        styled_df["Quantity"] = styled_df["Quantity"].apply(lambda x: f"{int(x):,}" if x == int(x) else f"{x:,}")
+        styled_df["Unit Price"] = styled_df["Unit Price"].apply(lambda x: f"{int(x):,}" if x == int(x) else f"{x:,}")
+        styled_df["Total Price"] = styled_df["Total Price"].apply(lambda x: f"{int(x):,}" if x == int(x) else f"{x:,}")
+        styled_df["Edit"] = [f"✏️ Edit {i}" for i in styled_df.index]
+        styled_df["Delete"] = [f"🗑 Delete {i}" for i in styled_df.index]
+        st.table(styled_df.drop(columns=["Note"]))
+
+        for i in styled_df.index:
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button(f"✏️ Edit", key=f"edit_btn_{i}"):
+                    st.session_state.edit_index = i
+            with col2:
+                if st.button(f"🗑 Delete", key=f"delete_btn_{i}"):
+                    st.session_state.outgoing.drop(index=i, inplace=True)
+                    st.session_state.outgoing.reset_index(drop=True, inplace=True)
+                    try:
+                        st.rerun()
+                    except AttributeError:
+                        pass
 
     for i, row in df.iterrows():
         cols = st.columns([2, 2, 1, 1, 1, 1, 1, 2, 1])
