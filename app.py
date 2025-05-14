@@ -68,12 +68,22 @@ with tab1:
             with col1:
                 date = st.date_input("Date", value=datetime.date.today())
                 product = st.selectbox("Product", options=st.session_state.products["Product"].unique())
+                type_options = st.session_state.products[st.session_state.products["Product"] == product]["Type"].unique()
+                product_type = st.selectbox("Type of Product", options=type_options) if len(type_options) > 1 else st.text_input("Type of Product", value=type_options[0] if len(type_options) == 1 else "", disabled=True)
                 default_unit = ""
+                product_type = ""
                 if product:
                     try:
-                        matching_unit = st.session_state.products[
+                        product_match = st.session_state.products[
                             st.session_state.products["Product"].str.startswith(product, na=False)
-                        ]["Default Unit"]
+                        ]
+                        matching_unit = product_match["Default Unit"]
+                        matching_type = product_match["Type"]
+                        default_unit = matching_unit.values[0] if not matching_unit.empty else ""
+                        product_type = matching_type.values[0] if not matching_type.empty else ""
+                    except Exception:
+                        default_unit = ""
+                        product_type = ""
                         # removed duplicate unsafe assignment
                     except Exception:
                         default_unit = ""
