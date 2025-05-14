@@ -1,9 +1,32 @@
 import streamlit as st
+import hashlib
 import pandas as pd
 import datetime
 from io import BytesIO
 
 st.set_page_config(page_title="Ice Cream Outgoing Tracker", layout="wide")
+
+# --- Login system ---
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def login():
+    st.title("🔐 Login")
+    username_input = st.text_input("Username")
+    password_input = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username_input == "abdulsalam" and hash_password(password_input) == hash_password("2025"):
+            st.session_state.logged_in = True
+            st.rerun()
+        else:
+            st.error("❌ Invalid username or password")
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    login()
+    st.stop()
 
 # --- Initialize session state ---
 data_key = "outgoing_data.csv"
@@ -26,7 +49,9 @@ if "branches" not in st.session_state:
 
 if "outgoing" not in st.session_state:
     st.session_state.outgoing = load_saved_data()
-else:
+
+# Save anytime data is updated
+if st.session_state.outgoing is not None and not st.session_state.outgoing.empty:
     save_data(st.session_state.outgoing)
 
 
@@ -105,12 +130,13 @@ with tab1:
             submitted = st.form_submit_button("Save Entry")
             if submitted:
                 row = {
-                "Date": date, "Product": product, "Type": product_type, "Branch": branch,
+                    "Date": date, "Product": product, "Type": product_type, "Branch": branch,
                     "Unit": unit, "Quantity": quantity,
                     "Unit Price": unit_price, "Total Price": total_price,
                     "Currency": currency, "Note": note
                 }
                 st.session_state.outgoing = st.session_state.outgoing._append(row, ignore_index=True)
+                save_data(st.session_state.outgoing)
                 st.success("✅ Entry saved!")
 
 # --- Filter & Summary ---
@@ -203,12 +229,13 @@ with tab3:
                 st.session_state.edit_index = i
         with cols[8]:
             if st.button("🗑 Delete", key=f"delete_{i}"):
-                st.session_state.outgoing.drop(index=i, inplace=True)
-                st.session_state.outgoing.reset_index(drop=True, inplace=True)
-                try:
-                    st.rerun()
-                except AttributeError:
-                    pass  # Safe fallback for older versions
+            st.session_state.outgoing.drop(index=i, inplace=True)
+            st.session_state.outgoing.reset_index(drop=True, inplace=True)
+            save_data(st.session_state.outgoing)
+            try:
+                st.rerun()
+            except AttributeError:
+                pass  # Safe fallback for older versions
 
     # Edit form below the table
     if "edit_index" in st.session_state and st.session_state.edit_index is not None:
@@ -235,6 +262,7 @@ with tab3:
                     date, product, type_, branch, unit, quantity,
                     unit_price, total_price, currency, note
                 ]
+                save_data(st.session_state.outgoing)
                 st.session_state.edit_index = None
                 st.success("✅ Entry updated!")
                 try:
