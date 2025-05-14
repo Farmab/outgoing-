@@ -54,8 +54,8 @@ with tab1:
             col1, col2 = st.columns(2)
             with col1:
                 date = st.date_input("Date", value=datetime.date.today())
-                product = st.selectbox("Product", options=st.session_state.products["Product"])
-                matching_unit = st.session_state.products.loc[st.session_state.products["Product"] == product, "Default Unit"]
+                product = st.text_input("Product", placeholder="Type product name")
+                matching_unit = st.session_state.products[st.session_state.products["Product"].str.startswith(product)]["Default Unit"]
                 default_unit = matching_unit.values[0] if not matching_unit.empty else ""
                 unit = st.text_input("Unit", value=default_unit)
                 quantity = st.number_input("Quantity", min_value=0.0)
