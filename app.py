@@ -123,6 +123,8 @@ with tab2:
         st.button("🖨 Print Summary", on_click=lambda: st.markdown("<script>window.print();</script>", unsafe_allow_html=True))
         summary = df.groupby(["Branch", "Product", "Type", "Unit", "Currency"])[["Quantity", "Total Price"]].sum().reset_index()
         grand_total = summary["Total Price"].sum()
+        summary['Quantity'] = summary['Quantity'].apply(lambda x: int(x) if x == int(x) else x)
+        summary['Total Price'] = summary['Total Price'].apply(lambda x: int(x) if x == int(x) else x)
         st.table(summary)
         total_sum = df["Total Price"].sum()
         st.success(f"💰 Total Price of Filtered Items: {total_sum:,.2f}")
@@ -146,9 +148,15 @@ with tab3:
         with cols[0]: st.write(row["Date"])
         with cols[1]: st.write(f"{row['Product']} ({row['Type']})")
         with cols[2]: st.write(row["Branch"])
-        with cols[3]: st.write(f"{row['Quantity']} {row['Unit']}")
-        with cols[4]: st.write(f"{row['Unit Price']} {row['Currency']}")
-        with cols[5]: st.write(f"{row['Total Price']} {row['Currency']}")
+        with cols[3]:
+            qty = int(row['Quantity']) if row['Quantity'] == int(row['Quantity']) else row['Quantity']
+            st.write(f"{qty} {row['Unit']}")
+        with cols[4]:
+            unit_price = int(row['Unit Price']) if row['Unit Price'] == int(row['Unit Price']) else row['Unit Price']
+            st.write(f"{unit_price} {row['Currency']}")
+        with cols[5]:
+            total_price = int(row['Total Price']) if row['Total Price'] == int(row['Total Price']) else row['Total Price']
+            st.write(f"{total_price} {row['Currency']}")
         with cols[6]: st.write(row["Note"])
         with cols[7]:
             if st.button("✏️ Edit", key=f"edit_{i}"):
