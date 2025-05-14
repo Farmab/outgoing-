@@ -192,27 +192,26 @@ with tab3:
                     pass
 
 # --- PDF Export ---
+with tab3:
     from fpdf import FPDF
+    from pathlib import Path
     if st.button("🖨 Export Summary as PDF"):
-        from fpdf import FPDF
-from pathlib import Path
-pdf = FPDF()
-pdf.add_page()
-pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
-pdf.set_font('DejaVu', '', 12)
+        pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+        pdf.add_font('DejaVu', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
+        pdf.set_font('DejaVu', '', 12)
         pdf.cell(200, 10, txt="Ice Cream Outgoing Summary", ln=True, align='C')
         pdf.ln(10)
         for i, row in summary.iterrows():
-            line = f"{row['Branch']} - {row['Product']} ({row['Unit']}): {int(row['Quantity']) if row['Quantity'] == int(row['Quantity']) else row['Quantity']} qty, {int(row['Total Price']) if row['Total Price'] == int(row['Total Price']) else row['Total Price']} {row['Currency']}"
+            quantity = int(row['Quantity']) if row['Quantity'] == int(row['Quantity']) else row['Quantity']
+            total = int(row['Total Price']) if row['Total Price'] == int(row['Total Price']) else row['Total Price']
+            line = f"{row['Branch']} - {row['Product']} ({row['Type']}, {row['Unit']}): {quantity} qty, {total} {row['Currency']}"
             pdf.cell(200, 10, txt=line, ln=True)
-        pdf.cell(200, 10, txt=f"Total Price: {int(total_sum) if total_sum == int(total_sum) else total_sum}", ln=True)
+        final_total = int(total_sum) if total_sum == int(total_sum) else total_sum
+        pdf.cell(200, 10, txt=f"Total Price: {final_total}", ln=True)
         pdf_output = BytesIO()
         pdf.output(pdf_output)
-        st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime="application/pdf")
-
-# --- Export ---
+        st.download_button("📄 Download PDF", data=pdf_output.getvalue(), file_name="summary.pdf", mime=
 with tab4:
     st.header("📥 Export All Data")
 
