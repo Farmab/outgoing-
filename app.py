@@ -73,10 +73,6 @@ with tab1:
                 unit_options = product_match["Default Unit"].dropna().unique()
                 product_type = st.selectbox("Type of Product", options=type_options) if len(type_options) > 1 else st.text_input("Type of Product", value=type_options[0] if len(type_options) == 1 else "", disabled=True)
                 unit = st.selectbox("Unit", options=unit_options) if len(unit_options) > 1 else st.text_input("Unit", value=unit_options[0] if len(unit_options) == 1 else "")
-                    # removed orphaned try/except block
-                        # removed duplicate unsafe assignment
-                    except Exception:
-                        default_unit = ""
                 # handled within try block above
                 # unit handled above dynamically
                 quantity = st.number_input("Quantity", min_value=0.0)
