@@ -3,4 +3,5 @@ pandas
 xlsxwriter
 openpyxl
 fpdf
+fpdf2
 
