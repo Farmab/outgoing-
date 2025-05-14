@@ -70,17 +70,11 @@ with tab1:
                 product = st.selectbox("Product", options=st.session_state.products["Product"].unique())
                 type_options = st.session_state.products[st.session_state.products["Product"] == product]["Type"].unique()
                 product_type = st.selectbox("Type of Product", options=type_options) if len(type_options) > 1 else st.text_input("Type of Product", value=type_options[0] if len(type_options) == 1 else "", disabled=True)
-                default_unit = ""
-                product_type = ""
-                if product:
-                    try:
-                        product_match = st.session_state.products[
-                            st.session_state.products["Product"].str.startswith(product, na=False)
-                        ]
-                        matching_unit = product_match["Default Unit"]
-                        matching_type = product_match["Type"]
-                        default_unit = matching_unit.values[0] if not matching_unit.empty else ""
-                        product_type = matching_type.values[0] if not matching_type.empty else ""
+                product_match = st.session_state.products[st.session_state.products["Product"] == product]
+                type_options = product_match["Type"].dropna().unique()
+                unit_options = product_match["Default Unit"].dropna().unique()
+                product_type = st.selectbox("Type of Product", options=type_options) if len(type_options) > 1 else st.text_input("Type of Product", value=type_options[0] if len(type_options) == 1 else "", disabled=True)
+                unit = st.selectbox("Unit", options=unit_options) if len(unit_options) > 1 else st.text_input("Unit", value=unit_options[0] if len(unit_options) == 1 else "")
                     except Exception:
                         default_unit = ""
                         product_type = ""
@@ -88,7 +82,7 @@ with tab1:
                     except Exception:
                         default_unit = ""
                 # handled within try block above
-                unit = st.text_input("Unit", value=default_unit)
+                # unit handled above dynamically
                 quantity = st.number_input("Quantity", min_value=0.0)
             with col2:
                 branch = st.selectbox("Branch", options=st.session_state.branches)
